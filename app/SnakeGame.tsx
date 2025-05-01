@@ -70,11 +70,11 @@ const SnakeGame = () => {
   }, []);
 
   useEffect(() => {
-    if (gameOver) return;
+    if (gameOver || !playerName) return;
 
     const intervalId = setInterval(moveSnake, SPEED);
     return () => clearInterval(intervalId);
-  }, [snake, direction, gameOver]);
+  }, [snake, direction, gameOver, playerName]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
