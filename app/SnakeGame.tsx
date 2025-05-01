@@ -4,17 +4,20 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const GRID_SIZE = 20;
 const SNAKE_START = [{ x: 8, y: 8 }];
+const PLAYER_NAME_START = "";
 const APPLE_START = { x: 12, y: 12 };
 const DIRECTION_START = { x: 1, y: 0 };
 const SPEED = 200;
 
 const SnakeGame = () => {
+  const [playerName, setPlayerName] = useState(PLAYER_NAME_START);
   const [snake, setSnake] = useState(SNAKE_START);
   const [apple, setApple] = useState(APPLE_START);
   const [direction, setDirection] = useState(DIRECTION_START);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
 
   const getRandomPosition = () => {
     let newX: number, newY: number;
@@ -100,11 +103,39 @@ const SnakeGame = () => {
     setDirection(DIRECTION_START);
     setGameOver(false);
     setScore(0);
+    saveScore();
+  };
+
+  const saveScore = async () => {
+    try {
+      const response = await fetch('/api/save-score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          playerName: playerName,
+          score: score,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save score');
+      }
+    } catch (error) {
+      console.error('Error saving score:', error);
+    }
   };
 
   return (
     <div>
       <h1>Snake Game</h1>
+      <input
+        type="text"
+        placeholder="Enter your name"
+        value={playerName}
+        onChange={(e) => setPlayerName(e.target.value)}
+      />
       <canvas ref={canvasRef} />
       <p>Score: {score}</p>
       {gameOver && (
