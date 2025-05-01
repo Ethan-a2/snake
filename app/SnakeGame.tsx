@@ -34,6 +34,7 @@ const SnakeGame = () => {
 
     if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE || snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
       setGameOver(true);
+      saveScore();
       return;
     }
 

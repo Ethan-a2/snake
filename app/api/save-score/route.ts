@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import fs from 'fs/promises';
+import path from 'path';
 
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+const dataFilePath = path.join(process.cwd(), 'scores.json');
 
 export async function POST(request: Request) {
   try {
@@ -16,10 +12,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Missing player name or score' }, { status: 400 });
     }
 
-    const query = 'INSERT INTO public.player_score (player_name, score) VALUES ($1, $2)';
-    const values = [playerName, score];
+    // Read existing scores from the JSON file
+    let scores = [];
+    try {
+      const fileContent = await fs.readFile(dataFilePath, 'utf8');
+      scores = JSON.parse(fileContent);
+    } catch (error: any) {
+      // If the file doesn't exist or is empty, start with an empty array
+      if (error.code === 'ENOENT') {
+        scores = [];
+      } else {
+        console.error('Error reading scores file:', error);
+        return NextResponse.json({ message: 'Error reading scores' }, { status: 500 });
+      }
+    }
 
-    await pool.query(query, values);
+    // Add the new score
+    scores.push({ playerName, score });
+
+    // Write the updated scores back to the JSON file
+    await fs.writeFile(dataFilePath, JSON.stringify(scores, null, 2));
 
     return NextResponse.json({ message: 'Score saved successfully' }, { status: 200 });
   } catch (error) {
