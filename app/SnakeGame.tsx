@@ -16,6 +16,7 @@ const SnakeGame = () => {
   const [direction, setDirection] = useState(DIRECTION_START);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
 
@@ -70,13 +71,14 @@ const SnakeGame = () => {
   }, []);
 
   useEffect(() => {
-    if (gameOver || !playerName) return;
+    if (gameOver || !playerName || !gameStarted) return;
 
     const intervalId = setInterval(moveSnake, SPEED);
     return () => clearInterval(intervalId);
-  }, [snake, direction, gameOver, playerName]);
+  }, [snake, direction, gameOver, playerName, gameStarted]);
 
   useEffect(() => {
+    if (!gameStarted) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = (canvas as HTMLCanvasElement).getContext('2d');
@@ -136,11 +138,14 @@ const SnakeGame = () => {
         value={playerName}
         onChange={(e) => setPlayerName(e.target.value)}
       />
+      {!gameStarted && (
+        <button onClick={() => setGameStarted(true)}>Start Game</button>
+      )}
       <canvas ref={canvasRef} />
       <p>Score: {score}</p>
       {gameOver && (
         <div>
-          <p>Game Over! Your score: {score}</p>
+          <p>Game Over! Your score: {score} Player Name: {playerName}</p>
           <button onClick={resetGame}>Play Again</button>
         </div>
       )}
